@@ -1,3 +1,5 @@
+#ifndef __SERVO_CONTROL_H__
+#define __SERVO_CONTROL_H__
 #include "Defines.h"
 #include <Servo.h>
 
@@ -30,7 +32,7 @@ namespace ServoControl {
     }
   }
 
-  void setAllServoPositions(uint8_t[] positions) {
+  void setAllServoPositions(uint8_t* positions) {
     finger0.write(positions[0]);
     finger1.write(positions[1]);
     finger2.write(positions[2]);
@@ -40,3 +42,4 @@ namespace ServoControl {
   }
 
 }
+#endif

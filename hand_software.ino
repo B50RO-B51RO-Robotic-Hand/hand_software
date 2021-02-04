@@ -42,7 +42,7 @@ void loop() {
       Serial.print("Not implemented - config preset ");
       Serial.println((in - 0b10000000));
     } else {
-      Serial.print("Error: invalid command received : ")
+      Serial.print("Error: invalid command received : ");
       Serial.println(in, BIN);
     }
   }
