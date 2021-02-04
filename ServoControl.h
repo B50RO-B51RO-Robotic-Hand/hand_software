@@ -11,7 +11,8 @@ namespace ServoControl {
   Servo finger3;
   Servo thumb0;
   Servo thumb1;
-  
+
+  /* Initialise servo motors */
   void init() {
     finger0.attach(FINGER_0_PIN);
     finger1.attach(FINGER_1_PIN);
@@ -21,6 +22,7 @@ namespace ServoControl {
     thumb1.attach(THUMB_1_PIN);
   }
 
+  /* Set the position of a single servo */
   void setServoPosition(uint8_t servo, uint8_t position) {
     switch(servo) {
       case 0: finger0.write(position); break;
@@ -32,6 +34,9 @@ namespace ServoControl {
     }
   }
 
+  /* Set the position of all servos
+   *  positions must be a 6-element array
+   */
   void setAllServoPositions(uint8_t* positions) {
     finger0.write(positions[0]);
     finger1.write(positions[1]);
