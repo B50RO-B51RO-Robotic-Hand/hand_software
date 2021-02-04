@@ -30,4 +30,13 @@ namespace ServoControl {
     }
   }
 
+  void setAllServoPositions(uint8_t[] positions) {
+    finger0.write(positions[0]);
+    finger1.write(positions[1]);
+    finger2.write(positions[2]);
+    finger3.write(positions[3]);
+    thumb0.write(positions[4]);
+    thumb1.write(positions[5]);
+  }
+
 }
