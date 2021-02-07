@@ -33,6 +33,7 @@ void loop() {
         Serial.println(servo);
       }
       // Read desired servo position from next byte
+      while (!Serial.available());
       uint8_t position = Serial.read();
       // Move servo to desired position
       ServoControl::setServoPosition(servo, position);
@@ -45,5 +46,6 @@ void loop() {
       Serial.print("Error: invalid command received : ");
       Serial.println(in, BIN);
     }
+
   }
 }

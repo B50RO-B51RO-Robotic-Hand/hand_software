@@ -10,4 +10,7 @@
 #define THUMB_0_PIN 9
 #define THUMB_1_PIN 10
 
+// If defined servos will not be controlled - debug info will be sent over serial instead
+#define DEBUG_ONLY
+
 #endif
