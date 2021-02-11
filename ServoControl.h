@@ -8,6 +8,14 @@
 namespace ServoControl {
 
   Servo servos[6];
+  int servo_limits[] = {
+                        0, 255, // Servo 0
+                        0, 255, // Servo 1
+                        0, 255, // Servo 2
+                        0, 255, // Servo 3
+                        0, 255, // Servo 4
+                        0, 255  // Servo 5
+                       };
 
   /* Initialise servo motors */
   void init() {
@@ -27,6 +35,11 @@ namespace ServoControl {
 
   /* Set the position of a single servo */
   void setServoPosition(uint8_t servo, uint8_t position) {
+    // Ensure position is within required limits
+    if (position < servo_limits[2*servo])
+      position = servo_limits[2*servo];
+    else if (position > servo_limits[2*servo+1])
+      position = servo_limits[2*servo+1];
     
     #ifndef DEBUG_ONLY
     
@@ -46,6 +59,15 @@ namespace ServoControl {
    *  positions must be a 6-element array
    */
   void setAllServoPositions(uint8_t* positions) {
+    // Limit positions
+    // Note - this may change the values in memory
+    //    This should not matter unless limits are to be changed on the fly
+    for (uint8_t i = 0; i < 6; i++) {
+      if (positions[i] < servo_limits[i*2])
+        positions[i] = servo_limits[i*2];
+      else if (positions[i] > servo_limits[i*2+1])
+        positions[i] = servo_limits[i*2+1];
+    }
     
     #ifndef DEBUG_ONLY
     
