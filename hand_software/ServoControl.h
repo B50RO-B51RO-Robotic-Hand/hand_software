@@ -7,8 +7,12 @@
 
 namespace ServoControl {
 
+  // Declarations
+  void setServoPosition(uint8_t servo, uint8_t position);
+  void setAllServoPositions(uint8_t* positions);
+
   Servo servos[6];
-  int servo_limits[] = {
+  uint8_t servo_limits[] = {
                         0, 255, // Servo 0
                         0, 255, // Servo 1
                         0, 255, // Servo 2
@@ -30,6 +34,9 @@ namespace ServoControl {
     servos[5].attach(THUMB_1_PIN);
     
     #endif
+
+    uint8_t zeros[] = {0, 0, 0, 0, 0, 0};
+    setAllServoPositions(zeros);
     
   }
 

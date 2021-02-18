@@ -163,12 +163,12 @@ class HandControlApplication(tk.Tk):
         if self.ser.is_open:
             try:
                 # Log command in format 0bxxxxxxxx
-                self.log(f"Sending command {command:08b}")
+                self.log(f"Sending byte {command:08b}")
                 self.ser.write(bytearray([command]))
             except serial.serialutil.SerialException:
-                self.log("Failed to send command")
+                self.log("Failed to send byte")
         else:
-            self.log("Cannot send command - port closed")
+            self.log("Cannot send byte - port closed")
 
     # Serial port listener thread function
     def listen_to_port(self):
