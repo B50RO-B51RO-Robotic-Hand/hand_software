@@ -7,9 +7,9 @@ namespace ServoConfigurations {
   
   uint8_t servo_configurations[4][6] = {
     {0, 0, 0, 0, 0, 0},                 // Zeros
-    {0, 51, 102, 153, 204, 255},        // Ascending
-    {255, 204, 153, 102, 51, 0},        // Descending
-    {0, 255, 0, 255, 0, 255}            // Alternating
+    {0, 36, 72, 98, 134, 180},          // Ascending
+    {180, 134, 98, 72, 36, 0},          // Descending
+    {0, 180, 0, 180, 0, 180}            // Alternating
   };
 
   /* Returns servo positions for a given configuration */

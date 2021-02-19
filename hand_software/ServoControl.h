@@ -13,12 +13,12 @@ namespace ServoControl {
 
   Servo servos[6];
   uint8_t servo_limits[] = {
-                        0, 255, // Servo 0
-                        0, 255, // Servo 1
-                        0, 255, // Servo 2
-                        0, 255, // Servo 3
-                        0, 255, // Servo 4
-                        0, 255  // Servo 5
+                        0, 180, // Servo 0
+                        0, 180, // Servo 1
+                        0, 180, // Servo 2
+                        0, 180, // Servo 3
+                        0, 180, // Servo 4
+                        0, 180  // Servo 5
                        };
   uint8_t servo_positions[] = {
     0, 0, 0, 0, 0, 0            // Servos 0 -> 5

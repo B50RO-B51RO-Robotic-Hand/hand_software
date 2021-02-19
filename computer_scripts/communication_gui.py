@@ -157,7 +157,7 @@ class HandControlApplication(tk.Tk):
         servo_name = self._selected_servo.get()
         selected_servo = self.servo_names.index(servo_name)
         servo_value = int(self._sbservovalue.get())
-        servo_value = min(max(0, servo_value), 255)     # Limit to 1 byte size
+        servo_value = min(max(0, servo_value), 180)     # Limit to 1 byte size
         # Send single servo command
         servo_command = 0b00000000 | selected_servo     # Line unnecessary, but kept in case command format changes
         self.send_command(servo_command)                # Send servo to move
