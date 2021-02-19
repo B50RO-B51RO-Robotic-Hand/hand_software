@@ -1,4 +1,5 @@
 #include "ServoControl.h"
+#include "ServoConfig.h"
 
 void setup() {
   Serial.begin(9600);
@@ -38,10 +39,9 @@ void loop() {
       // Move servo to desired position
       ServoControl::setServoPosition(servo, position);
     } else if ((in >> 7) == 1) {  // Set servos to preset position
-      // TODO: create default positions and set servos
-      // Can use ServoControl::setAllServoPositions(int[]);
-      Serial.print("Not implemented - config preset ");
-      Serial.println((in - 0b10000000));
+      // Retrieve configuration and set servos to it
+      uint8_t *positions = ServoConfigurations::GetConfiguration(in - 0b10000000);
+      ServoControl::setAllServoPositions(positions);
     } else {
       Serial.print("Error: invalid command received : ");
       Serial.println(in, BIN);

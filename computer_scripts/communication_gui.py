@@ -37,7 +37,13 @@ class HandControlApplication(tk.Tk):
 
         # Drop-down menu options
         self.servo_names = ["Finger 0", "Finger 1", "Finger 2", "Finger 3", "Thumb 0", "Thumb 1"]
-        self.servo_configs = [f"Unimplemented {i}" for i in range(10)]
+        self.servo_configs = [
+            "Zeros",
+            "Ascending",
+            "Descending",
+            "Alternating",
+            "Invalid"
+            ]
 
         # Create UI
         self.create_widgets()
