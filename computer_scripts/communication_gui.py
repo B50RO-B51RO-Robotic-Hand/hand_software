@@ -95,9 +95,18 @@ class HandControlApplication(tk.Tk):
         self._bsetconfig = ttk.Button(self._fmultiplecontrol, text="Set", command=self.set_config)
         self._bsetconfig.grid(row=2, column=0, sticky='nsew')
 
+        # Queries
+        self._fquery = tk.Frame(self, relief='groove', bd=1)
+        self._fquery.grid(row=0, column=3, sticky='nsew')
+        ttk.Label(self._fquery, text="Queries").grid(row=0, column=0, sticky='nsew')
+        self._bquerypositions = ttk.Button(self._fquery, text="Positions", command=self.query_positions)
+        self._bquerypositions.grid(row=1, column=0, sticky='nsew')
+        self._bquerylimits = ttk.Button(self._fquery, text="Limits", command=self.query_limits)
+        self._bquerylimits.grid(row=2, column=0, sticky='nsew')
+
         # Log display
         self._foutput = tk.Frame(self, relief='groove', bd=1)
-        self._foutput.grid(row=1, column=0, columnspan=3, sticky='nsew')
+        self._foutput.grid(row=1, column=0, columnspan=4, sticky='nsew')
         ttk.Label(self._foutput, text="Log").grid(row=0, column=0, sticky='nsew')
         self._stoutput = tk.scrolledtext.ScrolledText(self._foutput, wrap=tk.WORD, width=60, height=10)
         self._stoutput.grid(row=1, column=0, columnspan=2, sticky='nsew')
@@ -163,6 +172,16 @@ class HandControlApplication(tk.Tk):
         # Create and send command
         config_command = 0b10000000 | selected_config           # First bit is 1, remaining are config
         self.send_command(config_command)
+
+    # Sends position query byte command
+    def query_positions(self):
+        command = 0b00001000
+        self.send_command(command)
+
+    # Sends limit query byte command
+    def query_limits(self):
+        command = 0b00010000
+        self.send_command(command)
 
     # Sends byte command to connected device
     def send_command(self, command):

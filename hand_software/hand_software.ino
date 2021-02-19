@@ -20,7 +20,7 @@ void loop() {
      * TODO: Decide how many configurations to allow - message format allows up to 128
      */
     
-    if ((in >> 3) == 0) {         // Individual servo control
+    if ((in >> 3) == 0b00000) {   // Individual servo control
       // Servo to control is number 0 to 5
       // 0: finger 0
       // 1: finger 1
@@ -38,6 +38,10 @@ void loop() {
       uint8_t position = Serial.read();
       // Move servo to desired position
       ServoControl::setServoPosition(servo, position);
+    } else if ((in >> 3) == 0b00001) {  // Query all current positions
+      ServoControl::sendPositionDetails();
+    } else if ((in >> 3) == 0b00010) {  // Query joint limits
+      ServoControl::sendLimitDetails();
     } else if ((in >> 7) == 1) {  // Set servos to preset position
       // Retrieve configuration and set servos to it
       uint8_t *positions = ServoConfigurations::GetConfiguration(in - 0b10000000);

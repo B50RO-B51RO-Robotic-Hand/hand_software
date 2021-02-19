@@ -20,6 +20,9 @@ namespace ServoControl {
                         0, 255, // Servo 4
                         0, 255  // Servo 5
                        };
+  uint8_t servo_positions[] = {
+    0, 0, 0, 0, 0, 0            // Servos 0 -> 5
+  };
 
   /* Initialise servo motors */
   void init() {
@@ -60,6 +63,8 @@ namespace ServoControl {
     Serial.println(position);
     
     #endif
+
+    servo_positions[servo] = position;
   }
 
   /* Set the position of all servos
@@ -67,7 +72,7 @@ namespace ServoControl {
    */
   void setAllServoPositions(uint8_t* positions) {
     // Limit positions
-    // Note - this may change the values in memory
+    // Note - this may change the config values in memory
     //    This should not matter unless limits are to be changed on the fly
     for (uint8_t i = 0; i < 6; i++) {
       if (positions[i] < servo_limits[i*2])
@@ -80,6 +85,7 @@ namespace ServoControl {
     
     for (uint8_t i = 0; i < 6; i++) {
       servos[i].write(positions[i]);
+      servo_positions[i] = positions[i];
     }
     
     #else
@@ -88,10 +94,37 @@ namespace ServoControl {
     for (uint8_t i = 0; i < 6; i++) {
       Serial.print(positions[i]);
       Serial.print(" ");
+      servo_positions[i] = positions[i];
     }
     Serial.println("");
     
     #endif
+  }
+
+  /* Send current requested servo position details */
+  void sendPositionDetails() {
+    Serial.print("Servo positions: ");
+    for (uint8_t i = 0; i < 6; i++) {
+      #ifndef DEBUG_ONLY
+      Serial.print(servos[i].read());
+      Serial.print('|');
+      #endif
+      Serial.print(servo_positions[i]);
+      Serial.print(" ");
+    }
+    Serial.println("");
+  }
+
+  /* Send servo limits */
+  void sendLimitDetails() {
+    Serial.print("Servo limits: ");
+    for (uint8_t i = 0; i < 6; i++) {
+      Serial.print(servo_limits[2*i]);
+      Serial.print(",");
+      Serial.print(servo_limits[2*i + 1]);
+      Serial.print(" ");
+    }
+    Serial.println("");
   }
 
 }
