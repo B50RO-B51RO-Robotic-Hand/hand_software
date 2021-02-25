@@ -1,5 +1,6 @@
 #include "ServoControl.h"
 #include "ServoConfig.h"
+#include "SendMessage.h"
 
 void setup() {
   Serial.begin(9600);
@@ -30,25 +31,25 @@ void loop() {
       // 5: thumb  1
       uint8_t servo = in;         // First 5 bits are 0, so last 3 bits correspond to servo
       if (servo > 5) {            // Invalid servo selected!
-        Serial.print("Error: invalid servo selected : ");
-        Serial.println(servo);
+        String str = String("Error: invalid servo selected : ") + String(servo);
+        Send::sendString(str);
       }
       // Read desired servo position from next byte
       while (!Serial.available());
       uint8_t position = Serial.read();
       // Move servo to desired position
       ServoControl::setServoPosition(servo, position);
-    } else if ((in >> 3) == 0b00001) {  // Query all current positions
+    } else if (in == 0b00001000) {  // Query all current positions
       ServoControl::sendPositionDetails();
-    } else if ((in >> 3) == 0b00010) {  // Query joint limits
+    } else if (in == 0b00001001) {  // Query joint limits
       ServoControl::sendLimitDetails();
     } else if ((in >> 7) == 1) {  // Set servos to preset position
       // Retrieve configuration and set servos to it
       uint8_t *positions = ServoConfigurations::GetConfiguration(in - 0b10000000);
       ServoControl::setAllServoPositions(positions);
     } else {
-      Serial.print("Error: invalid command received : ");
-      Serial.println(in, BIN);
+      String str = String("Error: invalid command received : ") + String(in, BIN);
+      Send::sendString(str);
     }
 
   }

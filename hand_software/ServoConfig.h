@@ -1,6 +1,8 @@
 #ifndef __SERVO_CONFIG_H__
 #define __SERVO_CONFIG_H__
 
+#include "SendMessage.h"
+
 #define CONFIG_COUNT 4
 
 namespace ServoConfigurations {
@@ -15,9 +17,8 @@ namespace ServoConfigurations {
   /* Returns servo positions for a given configuration */
   uint8_t* GetConfiguration(int configuration) {
     if (configuration < 0 || configuration >= CONFIG_COUNT) {
-      Serial.print("Invalid servo configuration: ");
-      Serial.print(configuration);
-      Serial.println(" - setting to 0");
+      String str = String("Invalid servo configuration: ") + String(configuration) + String(" - setting to 0");
+      Send::sendString(str);
       configuration = 0;
     }
     return servo_configurations[configuration];

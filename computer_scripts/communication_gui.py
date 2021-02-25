@@ -180,7 +180,7 @@ class HandControlApplication(tk.Tk):
 
     # Sends limit query byte command
     def query_limits(self):
-        command = 0b00010000
+        command = 0b00001001
         self.send_command(command)
 
     # Sends byte command to connected device
@@ -188,7 +188,7 @@ class HandControlApplication(tk.Tk):
         if self.ser.is_open:
             try:
                 # Log command in format 0bxxxxxxxx
-                self.log(f"Sending byte {command:08b}")
+                # self.log(f"Sending byte {command:08b}")
                 self.ser.write(bytearray([command]))
             except serial.serialutil.SerialException:
                 self.log("Failed to send byte")
@@ -201,11 +201,12 @@ class HandControlApplication(tk.Tk):
         # End when flag is set to false or exception raised
         while self.port_listener_flag:
             try:
-                msg = self.ser.readline()
+                msg = self.ser.read()
                 if msg != b'':
-                    self.log(f"> {str(msg)[2:-5]}")
-            except (serial.serialutil.SerialException, TypeError, AttributeError):
+                    self.handle_message(msg[0])
+            except (serial.serialutil.SerialException, TypeError, AttributeError) as e:
                 self.log("Error raised in listener thread - is the hand connected?")
+                raise e
                 # TODO: Look more closely into why TypeError appears here
                 # Seems to happen after message has been received and root is closed
                 # May be due to port closing while self.ser.readline is executing?
@@ -239,6 +240,94 @@ class HandControlApplication(tk.Tk):
                 self._stoutput.see(tk.END)
         # Call again after 50ms
         self.after(50, self.process_log)
+
+    # Message byte received from serial port
+    # Handle the byte based on the message specification
+    def handle_message(self, message):
+        """
+
+        If first bit is 1 then message is string
+            Remaining bits specify string length - 1
+            Next [length] bytes are characters
+        If first 5 bits are 0 then message is for servo position
+            Remaining bits specify which servo
+            Next byte specifies position
+        If message is 0b00001000 then message is for all servo positions
+            Next 6 bytes are position for servos 0 to 5
+        If message is 0b00001001 then message is for all servo limits
+            Next 12 bytes specify limits
+            Order is min 0, max 0, min 1, max 1, etc
+        If message is 0b00001010 then message is raw force reading
+            Next byte specifies reading
+        """
+        print(f"Got message {message}")
+        if message >> 7 == 1:
+            # String
+            self.receive_char_array(message)
+        elif message >> 3 == 0b00000:
+            # Servo position
+            self.receive_servo_position(message)
+        elif message == 0b00001000:
+            # All servo positions
+            self.receive_all_servo_positions()
+        elif message == 0b00001001:
+            # All servo limits
+            self.receive_all_servo_limits()
+        elif message == 0b00001010:
+            # Raw force reading
+            self.receive_raw_force()
+        print(f"Handled message {message}")
+
+    # Read a character array from the serial port
+    def receive_char_array(self, message):
+        # Array length = last 7 bits of message + 1
+        length = (message - 0b10000000) + 1
+        # Read directly from serial port, cast to string, remove surrounding characters
+        text = str(self.ser.read())[2:-1]
+        self.log(f"> \"{text}\"")
+
+    # Read a single servo position
+    def receive_servo_position(self, message):
+        # Servo number = message as prefix is all 0
+        servo_num = message - 0b00000000
+        # Position is following byte
+        pos = self.read_one_byte()
+        self.log(f"> Servo {servo_num} position : {pos}")
+
+    # Read all servo positions
+    def receive_all_servo_positions(self):
+        # Following 6 bytes correspond to positions for servos 0 to 5
+        out = "Servo positions : "
+        for i in range(6):
+            pos = self.read_one_byte()
+            out += f"{pos} "
+        self.log(f"> {out}")
+
+    # Read all servo limits
+    def receive_all_servo_limits(self):
+        # Following 12 bytes correspond to servo limits
+        # Order is min 0, max 0, min 1, max 1, etc.
+        out = "Servo limits : "
+        for i in range(6):
+            l_min = self.read_one_byte()
+            l_max = self.read_one_byte()
+            out += f"({l_min},{l_max}) "
+        self.log(f"> {out}")
+
+    # Read a raw force reading
+    def receive_raw_force(self):
+        # Force is 1 byte
+        raw_force = self.read_one_byte()
+        self.log(f"> Raw force : {raw_force}")
+
+    # Helper function to read 1 byte from the serial port
+    # Will not return until a byte has been received
+    def read_one_byte(self):
+        byte = b''
+        while byte == b'':
+            byte = self.ser.read()
+        # ser.read() returns a byte array - take only first value
+        return byte[0]
 
 
 # Instantiate application and run

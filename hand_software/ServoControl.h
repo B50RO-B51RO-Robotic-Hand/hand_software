@@ -2,6 +2,7 @@
 #define __SERVO_CONTROL_H__
 
 #include "Defines.h"
+#include "SendMessage.h"
 
 #include <Servo.h>
 
@@ -39,7 +40,7 @@ namespace ServoControl {
     #endif
 
     uint8_t zeros[] = {0, 0, 0, 0, 0, 0};
-    setAllServoPositions(zeros);
+    setAllServoPositions(zeros);              // Initially set all servos to 0 position
     
   }
 
@@ -56,11 +57,9 @@ namespace ServoControl {
     servos[servo].write(position);
     
     #else
-    
-    Serial.print("Servo ");
-    Serial.print(servo);
-    Serial.print(" set to ");
-    Serial.println(position);
+
+    String msg = String("Servo ") + String(servo) + String(" set to ") + String(position);
+    Send::sendString(msg);
     
     #endif
 
@@ -89,42 +88,27 @@ namespace ServoControl {
     }
     
     #else
+
+    String msg = "Servo positions set as follows: ";
     
-    Serial.print("Servo positions set as follows: ");
     for (uint8_t i = 0; i < 6; i++) {
-      Serial.print(positions[i]);
-      Serial.print(" ");
+      msg += String(positions[i]);
+      msg += " ";
       servo_positions[i] = positions[i];
     }
-    Serial.println("");
+    Send::sendString(msg);
     
     #endif
   }
 
   /* Send current requested servo position details */
   void sendPositionDetails() {
-    Serial.print("Servo positions: ");
-    for (uint8_t i = 0; i < 6; i++) {
-      #ifndef DEBUG_ONLY
-      Serial.print(servos[i].read());
-      Serial.print('|');
-      #endif
-      Serial.print(servo_positions[i]);
-      Serial.print(" ");
-    }
-    Serial.println("");
+    Send::sendAllServoPositions(servo_positions);
   }
 
   /* Send servo limits */
   void sendLimitDetails() {
-    Serial.print("Servo limits: ");
-    for (uint8_t i = 0; i < 6; i++) {
-      Serial.print(servo_limits[2*i]);
-      Serial.print(",");
-      Serial.print(servo_limits[2*i + 1]);
-      Serial.print(" ");
-    }
-    Serial.println("");
+    Send::sendAllServoLimits(servo_limits);
   }
 
 }
