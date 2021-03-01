@@ -2,6 +2,9 @@
 #include "ServoConfig.h"
 #include "SendMessage.h"
 
+#define QUERY_ALL_POSITIONS 0b00001000
+#define QUERY_ALL_LIMITS 0b00001001
+
 void setup() {
   Serial.begin(9600);
   ServoControl::init();
@@ -39,9 +42,9 @@ void loop() {
       uint8_t position = Serial.read();
       // Move servo to desired position
       ServoControl::setServoPosition(servo, position);
-    } else if (in == 0b00001000) {  // Query all current positions
+    } else if (in == QUERY_ALL_POSITIONS) {  // Query all current positions
       ServoControl::sendPositionDetails();
-    } else if (in == 0b00001001) {  // Query joint limits
+    } else if (in == QUERY_ALL_LIMITS) {  // Query joint limits
       ServoControl::sendLimitDetails();
     } else if ((in >> 7) == 1) {  // Set servos to preset position
       // Retrieve configuration and set servos to it
