@@ -7,6 +7,14 @@ import serial, serial.tools.list_ports
 # Threading
 from threading import Thread
 from queue import Queue
+# Converting struct data
+import struct
+# Graph plotting
+from matplotlib.backends.backend_tkagg import (
+    FigureCanvasTkAgg, NavigationToolbar2Tk)
+from matplotlib.figure import Figure
+# Temporary plot
+import numpy as np
 
 """
 
@@ -16,6 +24,54 @@ tkinter is used to create the gui
 Serial data from the connected device is treated as text
 
 """
+
+# Custom class to allow a data graph to be displayed
+class GraphDisplayFrame(tk.Frame):
+    def __init__(self, title, master, **kwargs):
+        # "title" will display in label on first row of frame
+        # Graph will display on second row of frame
+        super().__init__(master, **kwargs)
+        ttk.Label(self, text=title).grid(row=0, column=0, sticky='nsew')
+
+        # Maximum length of data storage lists
+        self._max_data_elements = 200
+        # Data storage lists
+        self._data_x = []
+        self._data_y = []
+        # Flag for checking whether or not display needs to be updated
+        self._dirty_data = False
+
+        # Create figure + axis, get canvas and add to frame
+        self._fig = Figure(figsize=(4,3), dpi=100)
+        self._ax = self._fig.add_subplot(111)
+        self._ax.plot(self._data_x, self._data_y)
+        self._canvas = FigureCanvasTkAgg(self._fig, master=self)
+        self._canvas.get_tk_widget().grid(row=1, column=0, sticky='nsew')
+
+    # Add a data point to the data display lists
+    def append_data(self, x, y):
+        self._dirty_data = True
+        self._data_x.append(x)
+        self._data_y.append(y)
+        # Crop list if too long
+        if len(self._data_x) > self._max_data_elements:
+            self._data_x = self._data_x[-self._max_data_elements:]
+            self._data_y = self._data_y[-self._max_data_elements:]
+
+    # Update display
+    # Note - this must be called in the main thread
+    def update_display(self):
+        # Early return if no changes to display
+        if not self._dirty_data:
+            return
+        # Early return if too few data points
+        if len(self._data_x) < 2:
+            return
+        # Clear graph, plot new graph, update canvas
+        self._ax.clear()
+        self._ax.plot(self._data_x, self._data_y)
+        self._canvas.draw()
+        self._dirty_data = False
 
 class HandControlApplication(tk.Tk):
     def __init__(self):
@@ -33,6 +89,8 @@ class HandControlApplication(tk.Tk):
         self.log_queue = Queue()            # 
 
         # Start the log process loop
+        # Note : Text insertion must be performed inside main loop
+        #    process_log will call itself on repeat
         self.process_log()
 
         # Drop-down menu options
@@ -47,6 +105,12 @@ class HandControlApplication(tk.Tk):
 
         # Create UI
         self.create_widgets()
+
+        # Start graph update process loop
+        # Note : canvas.draw() call must be performed inside main loop
+        #    update_graph_display will call itself on repeat
+        self.update_graph_display()
+        
         self.title("Hand Controller")
 
     # Exit button pressed
@@ -103,6 +167,8 @@ class HandControlApplication(tk.Tk):
         self._bquerypositions.grid(row=1, column=0, sticky='nsew')
         self._bquerylimits = ttk.Button(self._fquery, text="Limits", command=self.query_limits)
         self._bquerylimits.grid(row=2, column=0, sticky='nsew')
+        self._bqueryforce = ttk.Button(self._fquery, text="Force", command=self.query_force)
+        self._bqueryforce.grid(row=3, column=0, sticky='nsew')
 
         # Log display
         self._foutput = tk.Frame(self, relief='groove', bd=1)
@@ -115,6 +181,10 @@ class HandControlApplication(tk.Tk):
         self._cbautoscroll.grid(row=0, column=1, sticky='nse')
 
         self._stoutput.insert(tk.END, "Connect to a device to start.\n")
+
+        # Force readings
+        self._fforcegraph = GraphDisplayFrame("Force Display", self, relief='groove', bd=1)
+        self._fforcegraph.grid(row=0, column=4, rowspan=2, sticky='nsew')
 
     # Get list of available ports
     def get_available_ports(self):
@@ -183,6 +253,11 @@ class HandControlApplication(tk.Tk):
         command = 0b00001001
         self.send_command(command)
 
+    # Sends force reading query byte command
+    def query_force(self):
+        command = 0b00001010
+        self.send_command(command)
+
     # Sends byte command to connected device
     def send_command(self, command):
         if self.ser.is_open:
@@ -241,6 +316,13 @@ class HandControlApplication(tk.Tk):
         # Call again after 50ms
         self.after(50, self.process_log)
 
+    # Updates graph on repeat
+    def update_graph_display(self):
+        # Update graph display
+        self._fforcegraph.update_display()
+        # Call again after 100ms
+        self.after(100, self.update_graph_display)
+
     # Message byte received from serial port
     # Handle the byte based on the message specification
     def handle_message(self, message):
@@ -283,7 +365,7 @@ class HandControlApplication(tk.Tk):
         # Array length = last 7 bits of message + 1
         length = (message - 0b10000000) + 1
         # Read directly from serial port, cast to string, remove surrounding characters
-        text = str(self.ser.read())[2:-1]
+        text = str(self.ser.read(length))[2:-1]
         self.log(f"> \"{text}\"")
 
     # Read a single servo position
@@ -316,9 +398,15 @@ class HandControlApplication(tk.Tk):
 
     # Read a raw force reading
     def receive_raw_force(self):
-        # Force is 1 byte
-        raw_force = self.read_one_byte()
-        self.log(f"> Raw force : {raw_force}")
+        # Force reading is 5 bytes
+        # 4 bytes - unsigned long timestamp
+        # 1 byte  - reading
+        # Data is in little endian order
+        data = self.ser.read(5)
+        timestamp, raw_force = struct.unpack(f'<LB', data)
+        self.log(f"> Raw force : {raw_force} at {timestamp}")
+        # Add reading to force graph
+        self._fforcegraph.append_data(timestamp/1000.0, raw_force)
 
     # Helper function to read 1 byte from the serial port
     # Will not return until a byte has been received

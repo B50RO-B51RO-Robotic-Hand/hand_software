@@ -1,9 +1,11 @@
 #include "ServoControl.h"
 #include "ServoConfig.h"
 #include "SendMessage.h"
+#include "SensorReading.h"
 
 #define QUERY_ALL_POSITIONS 0b00001000
 #define QUERY_ALL_LIMITS 0b00001001
+#define QUERY_FORCE_RAW 0b00001010
 
 void setup() {
   Serial.begin(9600);
@@ -42,11 +44,14 @@ void loop() {
       uint8_t position = Serial.read();
       // Move servo to desired position
       ServoControl::setServoPosition(servo, position);
-    } else if (in == QUERY_ALL_POSITIONS) {  // Query all current positions
+    } else if (in == QUERY_ALL_POSITIONS) {   // Query all current positions
       ServoControl::sendPositionDetails();
-    } else if (in == QUERY_ALL_LIMITS) {  // Query joint limits
+    } else if (in == QUERY_ALL_LIMITS) {      // Query joint limits
       ServoControl::sendLimitDetails();
-    } else if ((in >> 7) == 1) {  // Set servos to preset position
+    } else if (in == QUERY_FORCE_RAW) {       // Query force reading
+      Sensor::updateReading();      // Get new reading
+      Sensor::sendReadingDetails(); // Send reading
+    } else if ((in >> 7) == 1) {              // Set servos to preset position
       // Retrieve configuration and set servos to it
       uint8_t *positions = ServoConfigurations::GetConfiguration(in - 0b10000000);
       ServoControl::setAllServoPositions(positions);
@@ -55,5 +60,9 @@ void loop() {
       Send::sendString(str);
     }
 
+  } else {
+    delay(100);
+    Sensor::updateReading();
+    Sensor::sendReadingDetails();
   }
 }
