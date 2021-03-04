@@ -14,11 +14,11 @@ namespace Send {
   // Struct and union used for sending force readings and timestamp
   typedef struct TimestampedRawForce {
     uint32_t timestamp;         // 4 bytes
-    uint8_t rawForce;           // 1 byte
+    uint16_t rawForce;          // 2 bytes
   };
   typedef union TimestampedRawForceBytes {
-    TimestampedRawForce tsrf;   // 5 bytes
-    uint8_t bytes[5];           // 5 bytes
+    TimestampedRawForce tsrf;   // 6 bytes
+    uint8_t bytes[6];           // 6 bytes
   };
 
   // Send a single byte
@@ -75,7 +75,7 @@ namespace Send {
   }
 
   // Send a timestamp and raw force reading
-  void sendRawForce(uint32_t timestamp, uint8_t reading) {
+  void sendRawForce(uint32_t timestamp, uint16_t reading) {
     // Create timestamp + reading struct and union
     TimestampedRawForce tsrf = {timestamp, reading};
     TimestampedRawForceBytes tsrfBytes = {tsrf};

@@ -6,11 +6,14 @@
 #define QUERY_ALL_POSITIONS 0b00001000
 #define QUERY_ALL_LIMITS 0b00001001
 #define QUERY_FORCE_RAW 0b00001010
+#define TOGGLE_FORCE_STREAM 0b00001011
 
 void setup() {
   Serial.begin(9600);
   ServoControl::init();
 }
+
+bool sendForceStream = false;
 
 void loop() {
   // Check for messages
@@ -51,6 +54,8 @@ void loop() {
     } else if (in == QUERY_FORCE_RAW) {       // Query force reading
       Sensor::updateReading();      // Get new reading
       Sensor::sendReadingDetails(); // Send reading
+    } else if (in == TOGGLE_FORCE_STREAM) {   // Toggle force reading data stream
+      sendForceStream = !sendForceStream;
     } else if ((in >> 7) == 1) {              // Set servos to preset position
       // Retrieve configuration and set servos to it
       uint8_t *positions = ServoConfigurations::GetConfiguration(in - 0b10000000);
@@ -59,10 +64,10 @@ void loop() {
       String str = String("Error: invalid command received : ") + String(in, BIN);
       Send::sendString(str);
     }
-
-  } else {
-    delay(100);
+  }
+  if (sendForceStream) {
     Sensor::updateReading();
     Sensor::sendReadingDetails();
+    delay(100);
   }
 }

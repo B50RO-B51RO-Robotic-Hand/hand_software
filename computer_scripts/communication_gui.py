@@ -179,12 +179,17 @@ class HandControlApplication(tk.Tk):
         self._autoscroll = tk.IntVar(self, 1)
         self._cbautoscroll = ttk.Checkbutton(self._foutput, text="Auto-scroll", variable=self._autoscroll)
         self._cbautoscroll.grid(row=0, column=1, sticky='nse')
+        self._displayforcereadings = tk.IntVar(self, 0)
+        self._cbdisplayforcereadings = ttk.Checkbutton(self._foutput, text="Display Force Readings", variable=self._displayforcereadings)
+        self._cbdisplayforcereadings.grid(row=2, column=0, sticky='nsew')
 
         self._stoutput.insert(tk.END, "Connect to a device to start.\n")
 
         # Force readings
         self._fforcegraph = GraphDisplayFrame("Force Display", self, relief='groove', bd=1)
         self._fforcegraph.grid(row=0, column=4, rowspan=2, sticky='nsew')
+        self._btoggleforce = ttk.Button(self._fforcegraph, text="Toggle Force Data Stream", command=self.toggle_force_data_stream)
+        self._btoggleforce.grid(row=2, column=0, sticky='nsew')
 
     # Get list of available ports
     def get_available_ports(self):
@@ -256,6 +261,11 @@ class HandControlApplication(tk.Tk):
     # Sends force reading query byte command
     def query_force(self):
         command = 0b00001010
+        self.send_command(command)
+
+    # Sends command to enable/disable stream of force readings
+    def toggle_force_data_stream(self):
+        command = 0b00001011
         self.send_command(command)
 
     # Sends byte command to connected device
@@ -398,13 +408,14 @@ class HandControlApplication(tk.Tk):
 
     # Read a raw force reading
     def receive_raw_force(self):
-        # Force reading is 5 bytes
+        # Force reading is 6 bytes
         # 4 bytes - unsigned long timestamp
-        # 1 byte  - reading
+        # 2 bytes - unsigned short reading
         # Data is in little endian order
-        data = self.ser.read(5)
-        timestamp, raw_force = struct.unpack(f'<LB', data)
-        self.log(f"> Raw force : {raw_force} at {timestamp}")
+        data = self.ser.read(6)
+        timestamp, raw_force = struct.unpack(f'<LH', data)
+        if self._displayforcereadings.get():
+            self.log(f"> Raw force : {raw_force} at {timestamp}")
         # Add reading to force graph
         self._fforcegraph.append_data(timestamp/1000.0, raw_force)
 

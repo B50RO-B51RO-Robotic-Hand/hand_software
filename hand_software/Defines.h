@@ -9,8 +9,12 @@
 #define FINGER_3_PIN 8
 #define THUMB_0_PIN 9
 #define THUMB_1_PIN 10
+#define FORCE_READING_PIN 19
 
 // If defined servos will not be controlled - debug info will be sent over serial instead
 #define DEBUG_ONLY
+
+// If defined false force readings will be generated - used to test data graphing
+#define GENERATE_FALSE_FORCE_DATA
 
 #endif
