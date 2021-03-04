@@ -179,9 +179,12 @@ class HandControlApplication(tk.Tk):
         self._autoscroll = tk.IntVar(self, 1)
         self._cbautoscroll = ttk.Checkbutton(self._foutput, text="Auto-scroll", variable=self._autoscroll)
         self._cbautoscroll.grid(row=0, column=1, sticky='nse')
+        self._showcommandbytes = tk.IntVar(self, 0)
+        self._cbshowcommandbytes = ttk.Checkbutton(self._foutput, text="Display sent command bytes", variable=self._showcommandbytes)
+        self._cbshowcommandbytes.grid(row=2, column=0, sticky='nsew')
         self._displayforcereadings = tk.IntVar(self, 0)
-        self._cbdisplayforcereadings = ttk.Checkbutton(self._foutput, text="Display Force Readings", variable=self._displayforcereadings)
-        self._cbdisplayforcereadings.grid(row=2, column=0, sticky='nsew')
+        self._cbdisplayforcereadings = ttk.Checkbutton(self._foutput, text="Display force readings", variable=self._displayforcereadings)
+        self._cbdisplayforcereadings.grid(row=3, column=0, sticky='nsew')
 
         self._stoutput.insert(tk.END, "Connect to a device to start.\n")
 
@@ -273,7 +276,8 @@ class HandControlApplication(tk.Tk):
         if self.ser.is_open:
             try:
                 # Log command in format 0bxxxxxxxx
-                # self.log(f"Sending byte {command:08b}")
+                if self._showcommandbytes.get():
+                    self.log(f"Sending byte {command:08b}")
                 self.ser.write(bytearray([command]))
             except serial.serialutil.SerialException:
                 self.log("Failed to send byte")
