@@ -1,6 +1,8 @@
 #ifndef __SEND_MESSAGE_H__
 #define __SEND_MESSAGE_H__
 
+#include "Defines.h"
+
 #define MSG_CHAR_ARRAY_START 0b10000000
 #define MSG_SERVO_POSITION_START 0b00000000
 #define MSG_ALL_POSITIONS 0b00001000
@@ -57,7 +59,7 @@ namespace Send {
   // All servo positions
   void sendAllServoPositions(uint8_t* positions) {
     sendMessageByte(MSG_ALL_POSITIONS);
-    for (int i=0; i<6; i++) {
+    for (int i=0; i<SERVO_COUNT; i++) {
       sendMessageByte(positions[i]);
     }
   }
@@ -68,7 +70,7 @@ namespace Send {
   // Servo 3 min,   Servo 3 max,   Servo 4 min,   Servo 4 max,   Servo 5 min,   Servo 5 max
   void sendAllServoLimits(uint8_t* limits) {
     sendMessageByte(MSG_ALL_LIMITS);
-    for (int i=0; i<6*2; i++) {
+    for (int i=0; i<SERVO_COUNT*2; i++) {
       sendMessageByte(limits[i]);
     }
   }

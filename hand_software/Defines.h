@@ -7,9 +7,10 @@
 #define FINGER_1_PIN 6
 #define FINGER_2_PIN 7
 #define FINGER_3_PIN 8
-#define THUMB_0_PIN 9
-#define THUMB_1_PIN 10
+#define THUMB_PIN 9
 #define FORCE_READING_PIN 19
+
+#define SERVO_COUNT 5
 
 // If defined servos will not be controlled - debug info will be sent over serial instead
 #define DEBUG_ONLY

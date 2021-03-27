@@ -12,17 +12,16 @@ namespace ServoControl {
   void setServoPosition(uint8_t servo, uint8_t position);
   void setAllServoPositions(uint8_t* positions);
 
-  Servo servos[6];
+  Servo servos[SERVO_COUNT];
   uint8_t servo_limits[] = {
                         0, 180, // Servo 0
                         0, 180, // Servo 1
                         0, 180, // Servo 2
                         0, 180, // Servo 3
-                        0, 180, // Servo 4
-                        0, 180  // Servo 5
+                        0, 180  // Servo 4
                        };
   uint8_t servo_positions[] = {
-    0, 0, 0, 0, 0, 0            // Servos 0 -> 5
+    0, 0, 0, 0, 0               // Servos 0 -> 4
   };
 
   /* Initialise servo motors */
@@ -34,12 +33,11 @@ namespace ServoControl {
     servos[1].attach(FINGER_1_PIN);
     servos[2].attach(FINGER_2_PIN);
     servos[3].attach(FINGER_3_PIN);
-    servos[4].attach(THUMB_0_PIN);
-    servos[5].attach(THUMB_1_PIN);
+    servos[4].attach(THUMB_PIN);
     
     #endif
 
-    uint8_t zeros[] = {0, 0, 0, 0, 0, 0};
+    uint8_t zeros[] = {0, 0, 0, 0, 0};
     setAllServoPositions(zeros);              // Initially set all servos to 0 position
     
   }
@@ -73,7 +71,7 @@ namespace ServoControl {
     // Limit positions
     // Note - this may change the config values in memory
     //    This should not matter unless limits are to be changed on the fly
-    for (uint8_t i = 0; i < 6; i++) {
+    for (uint8_t i = 0; i < SERVO_COUNT; i++) {
       if (positions[i] < servo_limits[i*2])
         positions[i] = servo_limits[i*2];
       else if (positions[i] > servo_limits[i*2+1])
@@ -82,7 +80,7 @@ namespace ServoControl {
     
     #ifndef DEBUG_ONLY
     
-    for (uint8_t i = 0; i < 6; i++) {
+    for (uint8_t i = 0; i < SERVO_COUNT; i++) {
       servos[i].write(positions[i]);
       servo_positions[i] = positions[i];
     }
@@ -91,7 +89,7 @@ namespace ServoControl {
 
     String msg = "Servo positions set as follows: ";
     
-    for (uint8_t i = 0; i < 6; i++) {
+    for (uint8_t i = 0; i < SERVO_COUNT; i++) {
       msg += String(positions[i]);
       msg += " ";
       servo_positions[i] = positions[i];

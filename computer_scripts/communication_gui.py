@@ -25,6 +25,8 @@ Serial data from the connected device is treated as text
 
 """
 
+servo_count = 5
+
 # Custom class to allow a data graph to be displayed
 class GraphDisplayFrame(tk.Frame):
     def __init__(self, title, master, **kwargs):
@@ -94,7 +96,7 @@ class HandControlApplication(tk.Tk):
         self.process_log()
 
         # Drop-down menu options
-        self.servo_names = ["Finger 0", "Finger 1", "Finger 2", "Finger 3", "Thumb 0", "Thumb 1"]
+        self.servo_names = ["Finger 0", "Finger 1", "Finger 2", "Finger 3", "Thumb"]
         self.servo_configs = [
             "Zeros",
             "Ascending",
@@ -349,9 +351,9 @@ class HandControlApplication(tk.Tk):
             Remaining bits specify which servo
             Next byte specifies position
         If message is 0b00001000 then message is for all servo positions
-            Next 6 bytes are position for servos 0 to 5
+            Next 5 bytes are position for servos 0 to 4
         If message is 0b00001001 then message is for all servo limits
-            Next 12 bytes specify limits
+            Next 10 bytes specify limits
             Order is min 0, max 0, min 1, max 1, etc
         If message is 0b00001010 then message is raw force reading
             Next byte specifies reading
@@ -392,19 +394,19 @@ class HandControlApplication(tk.Tk):
 
     # Read all servo positions
     def receive_all_servo_positions(self):
-        # Following 6 bytes correspond to positions for servos 0 to 5
+        # Following 5 bytes correspond to positions for servos 0 to 4
         out = "Servo positions : "
-        for i in range(6):
+        for i in range(servo_count):
             pos = self.read_one_byte()
             out += f"{pos} "
         self.log(f"> {out}")
 
     # Read all servo limits
     def receive_all_servo_limits(self):
-        # Following 12 bytes correspond to servo limits
+        # Following 10 bytes correspond to servo limits
         # Order is min 0, max 0, min 1, max 1, etc.
         out = "Servo limits : "
-        for i in range(6):
+        for i in range(servo_count):
             l_min = self.read_one_byte()
             l_max = self.read_one_byte()
             out += f"({l_min},{l_max}) "

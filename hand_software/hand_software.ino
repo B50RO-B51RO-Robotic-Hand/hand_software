@@ -35,10 +35,9 @@ void loop() {
       // 1: finger 1
       // 2: finger 2
       // 3: finger 3
-      // 4: thumb  0
-      // 5: thumb  1
+      // 4: thumb
       uint8_t servo = in;         // First 5 bits are 0, so last 3 bits correspond to servo
-      if (servo > 5) {            // Invalid servo selected!
+      if (servo > SERVO_COUNT - 1) {            // Invalid servo selected!
         String str = String("Error: invalid servo selected : ") + String(servo);
         Send::sendString(str);
       }
